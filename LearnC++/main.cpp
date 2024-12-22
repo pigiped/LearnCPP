@@ -1,13 +1,26 @@
 #include <stdio.h>
+#include <iostream>
 
-/*
+using namespace std;
+
+//BouncyBalls - classes
+
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <list>
 #include "SDL.h"
 #include "SDL_image.h"
 #include "BouncyBall.h"
+#include "Plane.h"
+
+using namespace std;
 
 static const int nBalls = 10;
-static SDL_Texture* ball = nullptr;
-BouncyBall balls[nBalls];
+static SDL_Texture* ballTex = nullptr, *planeTex = nullptr;
+list<GameObject*> gameObjects;
+//BouncyBall balls[nBalls];
+//Plane plane;
 
 int processEvents(SDL_Window* window)
 {
@@ -57,16 +70,67 @@ void doRender(SDL_Renderer* renderer)
 	//SDL_Rect rect = { 0,0,32,32 };
 	//SDL_RenderCopy(renderer, ball, nullptr, &rect);
 
-	for (int i = 0; i < nBalls; i++)
+	for (auto gameObject : gameObjects)
 	{
-		balls[i].draw(renderer);
+		gameObject->draw(renderer);
 	}
 
 	SDL_RenderPresent(renderer);
 }
 
+void doUpdates()
+{
+	list<list<GameObject*>::iterator> toDie;
+	int numBalls = 0, numPlanes = 0;
+
+	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++)
+	{
+		auto gameObject = *it;
+
+		gameObject->update();
+
+		Plane* planePtr = dynamic_cast<Plane*>(gameObject);
+		BouncyBall* ballPtr = dynamic_cast<BouncyBall*>(gameObject);
+		if (ballPtr != nullptr)
+		{
+			//can safely use ball
+			numBalls++;
+		}
+		else if (planePtr != nullptr)
+		{
+			if (planePtr->getX() < -32)
+			{
+				//non possiamo eliminare un elemento mentre lo stiamo iterando
+				//quindi lo aggiungiamo a una lista di elementi da eliminare
+				toDie.push_back(it);
+			}
+			numPlanes++;
+		}
+	}
+
+	for (auto iit : toDie)
+	{
+		delete* iit;
+		gameObjects.erase(iit);
+	}
+
+	if (numPlanes == 0)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			Plane* plane = new Plane;
+			plane->setTexture(planeTex);
+			plane->setPos(640-rand() % 100, rand() % 480 - 40);
+			gameObjects.push_back(plane);
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
+	// Initialize random seed
+	srand(time(nullptr));
+
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 
@@ -86,7 +150,18 @@ int main(int argc, char* argv[])
 	auto surface = IMG_Load("ball.png");
 	if (surface)
 	{
-		ball = SDL_CreateTextureFromSurface(renderer, surface);
+		ballTex = SDL_CreateTextureFromSurface(renderer, surface);
+	}
+	else
+	{
+		return 1;
+	}
+	SDL_FreeSurface(surface);
+
+	surface = IMG_Load("plane.png");
+	if (surface)
+	{
+		planeTex = SDL_CreateTextureFromSurface(renderer, surface);
 	}
 	else
 	{
@@ -96,10 +171,14 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < nBalls; i++)
 	{
-		balls[i].setPos(50 + i * 32, 100);
-		balls[i].setTexture(ball);
-		balls[i].setElasticity((float)i / nBalls);
+		BouncyBall *ball = new BouncyBall;
+		ball->setPos(50 + i * 32, 100);
+		ball->setTexture(ballTex);
+		ball->setElasticity((float)i / nBalls);
+
+		gameObjects.push_back(ball);
 	}
+
 
 	int done = 0;
 
@@ -107,17 +186,21 @@ int main(int argc, char* argv[])
 	{
 		done = processEvents(window);
 
-		for (int i = 0; i < nBalls; i++)
-		{
-			balls[i].update();
-		}
+		doUpdates();
 
 		doRender(renderer);
 
 		SDL_Delay(10);
 	}
 
-	SDL_DestroyTexture(ball);
+	for (auto gameObject:gameObjects)
+	{
+		delete gameObject;
+	}
+	gameObjects.clear();
+
+	SDL_DestroyTexture(ballTex);
+	SDL_DestroyTexture(planeTex);
 
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
@@ -125,9 +208,10 @@ int main(int argc, char* argv[])
 	SDL_Quit();
 	return 0;
 }
-*/
 
-#include "IntArray.h"
+
+//IntArray - operator override
+/*#include "IntArray.h"
 
 void func()
 {
@@ -143,7 +227,9 @@ void func()
 	}
 
 	IntArray c = a + b;
-	printf("%d\n", c.get(101));
+
+	c[101] = 50;
+	printf("%d\n", c[101]);
 
 }
 
@@ -153,3 +239,131 @@ int main()
 
 	return 0;
 }
+*/
+
+//Encapsulated int - implicit conversion
+/*#include <iostream>
+
+using namespace std;
+
+static int numberOfAdditions = 0;
+
+class EncapsulatedInt
+{
+public:
+	EncapsulatedInt()
+	{ }
+
+	EncapsulatedInt(int someInt)
+	{
+		i = someInt;
+	}
+
+	//operators
+	EncapsulatedInt operator+(const EncapsulatedInt& rhs)
+	{
+		numberOfAdditions++;
+		return EncapsulatedInt(i + rhs.i);
+	}
+
+	//implicit conversion
+	operator int()
+	{
+		return i;
+	}
+
+private:
+	int i = 0;
+};
+
+void func(int i)
+{
+	cout << "func gets " << i << endl;
+}
+
+int main()
+{
+	EncapsulatedInt a, b(10);
+	auto c = a + b;
+
+	int i = c;
+	func(c);
+
+	cout << numberOfAdditions << endl;
+
+	return 0;
+}*/
+
+//new and delete
+/*using namespace std;
+
+class Example
+{
+public:
+	~Example()
+	{
+		cout << "destructor of example\n";
+	}
+};
+
+int main()
+{
+	Example* e = new Example[100];
+
+	delete []e; //if you call new with [] you have to call delete with [] or it wont
+				//call all the destructors
+	return 0;
+}*/
+
+//templates
+/*using namespace std;
+
+//instead of writing a function for each type i can use templates, so the compiler will do that
+template <typename NumberType>
+NumberType powerOf2(NumberType i)
+{
+	return i * i;
+}
+
+int main()
+{
+	cout << powerOf2(0.5) << endl;
+	cout << powerOf2(0.5f) << endl;
+
+	return 0;
+}
+*/
+
+//data structures
+/*when to use:
+	maps when searching by key (indexes)
+	sets when searching by value (also when uniqness needed)
+	lists when doing many insertions/deletions in middle
+	vectors for everything else
+*/
+/*#include <vector>
+
+int main()
+{
+	vector<int> v;
+
+	v.push_back(0);
+	v.push_back(1);
+	v.push_back(2);
+
+	for (vector<int>::iterator it = v.begin(); it != v.end(); it++)
+	{
+		cout << *it << endl;
+	}
+	//or you can use the human syntax (foreach)
+	for (int& i : v)
+	{
+		cout << i << endl;
+	}
+	//or better
+	for(auto i : v)
+	{
+		cout << i << endl;
+	}
+}
+*/

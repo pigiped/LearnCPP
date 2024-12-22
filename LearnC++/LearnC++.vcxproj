@@ -152,12 +152,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BouncyBall.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="IntArray.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BouncyBall.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="IntArray.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plane.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

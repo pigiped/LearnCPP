@@ -31,10 +31,3 @@ void BouncyBall::setElasticity(float e)
 {
 	elasticity = e;
 }
-
-
-void BouncyBall::setPos(float x, float y)
-{
-	this->x = x;
-	this->y = y;
-}

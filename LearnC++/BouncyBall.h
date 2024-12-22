@@ -2,20 +2,22 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "GameObject.h"
 
-class BouncyBall
+class BouncyBall : public GameObject
 {
 public:
-	void setTexture(SDL_Texture* texture);
-	void draw(SDL_Renderer* renderer);
-	void update();
 
-	void setPos(float x, float y);
+	virtual ~BouncyBall() {}
+
+	void setTexture(SDL_Texture* texture);
+	virtual void draw(SDL_Renderer* renderer);
+	virtual void update();
+
 	void setElasticity(float e);
 
 private:
 	SDL_Texture* texture = nullptr;
-	float x = 0, y = 0;
 	float dy = 0;
 	float elasticity = 0.5;
 	const float gravity = 0.02;

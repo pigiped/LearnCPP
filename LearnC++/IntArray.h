@@ -15,6 +15,8 @@ public:
 	//concat
 	IntArray operator+(const IntArray& arr);
 
+	int& operator[](int i);
+
 private:
 	size_t size;
 	int* data;

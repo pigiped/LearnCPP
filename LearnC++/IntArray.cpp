@@ -3,6 +3,8 @@
 #include <string.h> //per memcpy
 #include "IntArray.h"
 
+static int dummy = 0;
+
 IntArray::IntArray(int n)
 {
 	printf("alloc of %p\n", this);
@@ -45,6 +47,13 @@ IntArray IntArray::operator+(const IntArray& arr)
 	memcpy(ret.data + size, arr.data, sizeof(int) * arr.size);
 
 	return ret;
+}
+
+int& IntArray::operator[](int i)
+{
+	if (!safetyCheck(i))
+		return dummy;
+	return data[i];
 }
 
 IntArray::~IntArray()
