@@ -13,9 +13,11 @@ using namespace std;
 #include "SDL_image.h"
 #include "BouncyBall.h"
 #include "Plane.h"
+#include "TextureManager.h"
 
 using namespace std;
 
+static TextureManager* textureManager = nullptr;
 static const int nBalls = 10;
 static SDL_Texture* ballTex = nullptr, *planeTex = nullptr;
 list<GameObject*> gameObjects;
@@ -147,27 +149,11 @@ int main(int argc, char* argv[])
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	auto surface = IMG_Load("ball.png");
-	if (surface)
-	{
-		ballTex = SDL_CreateTextureFromSurface(renderer, surface);
-	}
-	else
-	{
-		return 1;
-	}
-	SDL_FreeSurface(surface);
+	TextureManager::setRenderer(renderer);
+	textureManager = new TextureManager;
 
-	surface = IMG_Load("plane.png");
-	if (surface)
-	{
-		planeTex = SDL_CreateTextureFromSurface(renderer, surface);
-	}
-	else
-	{
-		return 1;
-	}
-	SDL_FreeSurface(surface);
+	ballTex = textureManager->getTexture("ball.png");
+	planeTex = textureManager->getTexture("plane.png");
 
 	for (int i = 0; i < nBalls; i++)
 	{
@@ -204,6 +190,8 @@ int main(int argc, char* argv[])
 
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+
+	delete textureManager;
 
 	SDL_Quit();
 	return 0;
